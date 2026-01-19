@@ -1,16 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using static UnityEngine.LowLevelPhysics2D.PhysicsLayers;
 
 public class MainManager : MonoBehaviour
 {
     public Brick BrickPrefab;
     public int LineCount = 6;
     public Rigidbody Ball;
+    public static MainManager instanceMain;
+
+    public Button homeButton;
 
     public Text ScoreText;
+    public Text HighScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
@@ -18,10 +24,14 @@ public class MainManager : MonoBehaviour
     
     private bool m_GameOver = false;
 
-    
+
     // Start is called before the first frame update
+
+
+
     void Start()
     {
+
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -36,6 +46,13 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+        HighScoreText.text = $"High Score: {GameManager.instance.hScore}";
+    }
+
+
+   public void HomeButton()
+    {
+        SceneManager.LoadScene(0);
     }
 
     private void Update()
@@ -58,6 +75,7 @@ public class MainManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+
             }
         }
     }
@@ -72,5 +90,31 @@ public class MainManager : MonoBehaviour
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        HighScoreCalc();
+        if(m_Points > GameManager.instance.hScore)
+        {
+            GameManager.instance.hScore = m_Points;
+            GameManager.instance.hScore = m_Points;
+            HighScoreText.text = $"High Score: {GameManager.instance.hScore}";
+        } 
+    }
+
+
+
+    //----method called every game over to test if a new high score was achieved, if so replace relevant index in GameManager singleton
+    //----Do the same for the names in the name array with a matching index, so name matches score index when array is queried
+    public void HighScoreCalc()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+
+            if (m_Points > GameManager.instance.scoreBoard[i])
+            {
+                GameManager.instance.scoreBoard[i] = m_Points;
+
+                GameManager.instance.scoreNames[i] = GameManager.instance.playerName;
+                return;
+            }
+        }
     }
 }
